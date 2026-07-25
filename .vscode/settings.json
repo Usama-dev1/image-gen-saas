@@ -1,0 +1,30 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.git": true,
+    "**/*.lock": true,
+    "**/*.min.*": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/.git/objects/**": true
+  },
+  "github.copilot.chat.searchContext": {
+    "exclude": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.next/**",
+      "**/coverage/**"
+    ]
+  },
+  "css.lint.unknownAtRules": "ignore"
+}
