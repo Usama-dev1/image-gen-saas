@@ -9,13 +9,16 @@
 
 ## TypeScript
 - Keep types minimal. Use basic primitives: `string`, `number`, `boolean`, arrays.
-- Use `any` only when a third-party library forces it. Add a comment explaining why.
+- Use `any` whenever a type gets annoying or complex to write. Don't fight TypeScript — any is fine.
 - Plain `type` aliases only. No `interface`, no `extends`, no `implements`.
-- No `enum`. Use plain string constants instead.
+- Adapters (Storage, AI Provider, Billing) are a type describing what functions they need — each provider is just a plain object with those functions. No classes, no interface.
+- Ensure absolute consistency. Do not mix `type` and `interface` (the "circus of types"). Stick strictly to `type` everywhere.
+- Enums are allowed for fixed sets of values (e.g. status, role, plan). Use TypeScript enum where it makes the code clearer.
 - Let TypeScript infer types where obvious. Do not annotate everything manually.
 
 ## Code Structure
 - Every file has one job. No utility files that grow into catch-alls.
+- Extract reusable logic into custom hooks to minimize code duplication as much as possible.
 - No barrel exports. Import directly from the file, not from an `index.ts`.
 - No function longer than 20 lines. Split it.
 - No inline object construction in function calls. Assign to a variable first.
@@ -125,3 +128,22 @@
 - Add JSON-LD schema to key pages: homepage, pricing, blog posts if any.
 - Use `SoftwareApplication` schema on the homepage.
 - Use `FAQPage` schema on pricing or landing pages.
+
+## Agent Behavior & Permissions
+- NEVER make unsolicited changes. Do exactly as told, and no more.
+- ALWAYS ask for explicit permission before doing multi-file edits or implementing broad changes.
+
+## App Architecture & Integrations
+- **MongoDB First**: MongoDB is the absolute source of truth. Never rely on third-party Admin APIs to query state.
+- **Provider-Agnostic**: Models (`Generation`, `Payment`) are provider-agnostic.
+- **Database Hooks**: Use Better Auth `databaseHooks` for hydrating users upon creation instead of manual hydration.
+- **Storage Adapter Pattern**: All storage goes through `StorageAdapter` (Cloudinary). Soft delete instantly in DB (`isDeleted: true`); cron jobs handle bulk hard deletes to Cloudinary.
+- **AI Generation (Fire-and-Forget)**: AI generation deducts credits upfront, kicks off the job asynchronously, and returns a pending status instantly. A webhook commits the final image.
+- **Zod Everywhere**: Every API route must use Zod to validate payloads before logic runs.
+- **Test Scripts Before Integration**: Before wiring any major API (Cloudinary, Replicate), ALWAYS write a standalone test script in `scripts/` first.
+
+## Data Fetching & UI
+- **Server Actions for Mutations**: Client components trigger mutations (saves, updates) using Next.js Server Actions.
+- **Native Fetch Polling**: Use native `fetch()` loops in custom hooks for polling AI status. Avoid heavy clients like React Query.
+- **Tailwind First**: All styling must use Tailwind CSS. Prioritize modern, premium aesthetics (glassmorphism, subtle gradients).
+- **Error Boundaries**: Wrap major routes in React Error Boundaries to prevent full page crashes.

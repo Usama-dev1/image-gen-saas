@@ -4,10 +4,10 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signUp, signIn } from "@/lib/auth-client"
 import { RegisterView } from "./RegisterView"
-
 export function RegisterContainer() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -19,6 +19,24 @@ export function RegisterContainer() {
 
     setLoading(true);
     setError(null);
+    setFieldErrors({});
+
+    const newFieldErrors: any = {};
+    if (name.length < 2) {
+      newFieldErrors.name = "Name must be at least 2 characters.";
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newFieldErrors.email = "Please enter a valid email address.";
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)) {
+      newFieldErrors.password = "Password must be at least 8 chars with an uppercase, lowercase, number, and special character.";
+    }
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setLoading(false);
+      return;
+    }
 
     const { error: signUpError } = await signUp.email({
       name,
@@ -41,5 +59,5 @@ export function RegisterContainer() {
     });
   };
 
-  return <RegisterView onSubmit={handleRegister} onGoogleLogin={handleGoogleLogin} error={error} loading={loading} />
+  return <RegisterView onSubmit={handleRegister} onGoogleLogin={handleGoogleLogin} error={error} fieldErrors={fieldErrors} loading={loading} />
 }

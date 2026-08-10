@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -45,13 +46,26 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
-        "dark h-full antialiased",
+        "h-full antialiased",
         inter.variable,
         geistMono.variable,
       )}
       suppressHydrationWarning
       data-scroll-behavior="smooth"
     >
+      <head>
+        <Script id="theme-script" strategy="beforeInteractive" dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) || localStorage.getItem('theme') === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.add('light');
+                }
+              } catch (_) {}
+            `,
+          }} />
+      </head>
       <body className="min-h-full bg-background text-foreground font-sans">
         {children}
       </body>

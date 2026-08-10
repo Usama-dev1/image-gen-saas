@@ -7,10 +7,11 @@ export type RegisterViewProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onGoogleLogin: () => void;
   error: string | null;
+  fieldErrors?: any;
   loading: boolean;
 }
 
-export function RegisterView({ onSubmit, onGoogleLogin, error, loading }: RegisterViewProps) {
+export function RegisterView({ onSubmit, onGoogleLogin, error, fieldErrors = {}, loading }: RegisterViewProps) {
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] p-4">
       <Card className="w-full max-w-md">
@@ -29,17 +30,20 @@ export function RegisterView({ onSubmit, onGoogleLogin, error, loading }: Regist
 
             <div className="flex flex-col gap-2">
               <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-              <Input id="name" name="name" type="text" placeholder="John Doe" required />
+              <Input id="name" name="name" type="text" placeholder="John Doe" required className={fieldErrors.name ? "border-red-500" : ""} />
+              {fieldErrors.name && <p className="text-xs text-red-500">{fieldErrors.name}</p>}
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-              <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+              <Input id="email" name="email" type="email" placeholder="you@example.com" required className={fieldErrors.email ? "border-red-500" : ""} />
+              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
             </div>
             
             <div className="flex flex-col gap-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input id="password" name="password" type="password" placeholder="••••••••" required />
+              <Input id="password" name="password" type="password" placeholder="••••••••" required className={fieldErrors.password ? "border-red-500" : ""} />
+              {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
             </div>
 
             <Button type="submit" className="btn-primary w-full mt-2" disabled={loading}>

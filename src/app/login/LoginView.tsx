@@ -1,16 +1,17 @@
-import { Card, CardBody } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
+import { Card, CardBody } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 export type LoginViewProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onGoogleLogin: () => void;
   error: string | null;
+  fieldErrors?: any;
   loading: boolean;
-}
+};
 
-export function LoginView({ onSubmit, onGoogleLogin, error, loading }: LoginViewProps) {
+export function LoginView({ onSubmit, onGoogleLogin, error, fieldErrors = {}, loading }: LoginViewProps) {
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-4rem)] p-4">
       <Card className="w-full max-w-md">
@@ -29,12 +30,14 @@ export function LoginView({ onSubmit, onGoogleLogin, error, loading }: LoginView
 
             <div className="flex flex-col gap-2">
               <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-              <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+              <Input id="email" name="email" type="email" placeholder="you@example.com" required className={fieldErrors.email ? "border-red-500" : ""} />
+              {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input id="password" name="password" type="password" placeholder="••••••••" required />
+              <Input id="password" name="password" type="password" placeholder="••••••••" required className={fieldErrors.password ? "border-red-500" : ""} />
+              {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
             </div>
 
             <Button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
@@ -56,5 +59,5 @@ export function LoginView({ onSubmit, onGoogleLogin, error, loading }: LoginView
         </CardBody>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
 import "../models/Session"; // Ensure TTL index is registered on boot
-const connectDB = async () => {
-  try {
+let connectionPromise: Promise<typeof mongoose> | null = null;
+
+const connectDB = () => {
+  if (!connectionPromise) {
     const uri = process.env.MONGODB_URI || "";
-    await mongoose.connect(uri);
-    console.log("MongoDB Connected Successfully");
-  } catch (error) {
-    console.error("MongoDB Connection Error:", error);
-    process.exit(1);
+    connectionPromise = mongoose.connect(uri).then((m) => {
+      console.log("MongoDB Connected Successfully");
+      return m;
+    });
   }
+  return connectionPromise;
 };
 
 export default connectDB;

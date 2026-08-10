@@ -1,3 +1,8 @@
+/**
+ * Tests the Better Auth registration and login flow.
+ * Specifically verifies that new users are successfully inserted into MongoDB
+ * and that database hooks inject the default user fields (credits, limits, etc.).
+ */
 async function testAuth() {
   const baseUrl = 'http://localhost:3000/api/auth';
   const email = `testuser_${Date.now()}@example.com`;

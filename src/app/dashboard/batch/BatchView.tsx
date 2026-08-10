@@ -27,9 +27,11 @@ const defaultTasks = [
   },
 ];
 
-export type BatchViewProps = {};
+export type BatchViewProps = {
+  modelCost: number;
+};
 
-export function BatchView(_props: BatchViewProps) {
+export function BatchView({ modelCost }: BatchViewProps) {
   // Required use client due to local UI state for task range slider
   const [taskCount, setTaskCount] = useState(3);
 
@@ -50,12 +52,21 @@ export function BatchView(_props: BatchViewProps) {
           {/* Reference Upload */}
           <Card>
             <CardBody>
-              <div>
-                <CardTitle>Reference Character</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Upload a clear, front-facing image to maintain identity across
-                  generations.
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Reference Character</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a clear, front-facing image to maintain identity across
+                    generations.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <select className="flex h-7 w-[140px] rounded-md border border-input bg-background px-2 py-1 text-xs ring-offset-background focus:outline-none">
+                    <option>Upload New Image</option>
+                    <option>Load: Elara Voss</option>
+                    <option>Load: Cmdr Shepard</option>
+                  </select>
+                </div>
               </div>
               <div className="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-lg p-8 flex flex-col items-center justify-center gap-4 cursor-pointer bg-muted/30 hover:bg-muted/50 group mt-2">
                 <div className="size-16 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -124,13 +135,13 @@ export function BatchView(_props: BatchViewProps) {
                         Estimated Cost
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {taskCount} × 5 Credits
+                        {taskCount} × {modelCost} Credits
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-emerald-500 flex items-baseline gap-1">
-                      {taskCount * 5} <span className="text-sm font-semibold text-emerald-500/70">CR</span>
+                      {taskCount * modelCost} <span className="text-sm font-semibold text-emerald-500/70">CR</span>
                     </span>
                   </div>
                 </div>

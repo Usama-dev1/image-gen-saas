@@ -110,33 +110,29 @@
   --color-destructive-foreground: var(--color-error-content);
 }
 
-@variant dark {
-  @theme {
-    --color-base-100: oklch(0.08 0 0);
-    --color-base-200: oklch(0.11 0 0);
-    --color-base-300: oklch(0.14 0 0);
+.dark {
+  --color-base-100: oklch(0.08 0 0);
+  --color-base-200: oklch(0.11 0 0);
+  --color-base-300: oklch(0.14 0 0);
 
-    --color-base-content:        oklch(0.98 0 0);
-    --color-base-content-muted:  oklch(0.55 0 0);
-    --color-base-content-subtle: oklch(0.40 0 0);
+  --color-base-content:        oklch(0.98 0 0);
+  --color-base-content-muted:  oklch(0.55 0 0);
+  --color-base-content-subtle: oklch(0.40 0 0);
 
-    --color-border:        oklch(1 0 0 / 8%);
-    --color-border-strong: oklch(1 0 0 / 15%);
+  --color-border:        oklch(1 0 0 / 8%);
+  --color-border-strong: oklch(1 0 0 / 15%);
 
-    /* Primary/semantic unchanged — oklch handles both modes */
+  --color-secondary:         oklch(0.18 0 0);
+  --color-secondary-hover:   oklch(0.21 0 0);
+  --color-secondary-content: oklch(0.90 0 0);
 
-    --color-secondary:         oklch(0.18 0 0);
-    --color-secondary-hover:   oklch(0.21 0 0);
-    --color-secondary-content: oklch(0.90 0 0);
+  --color-accent:         oklch(0.25 0.06 285);
+  --color-accent-hover:   oklch(0.28 0.08 285);
+  --color-accent-content: oklch(0.80 0.18 285);
 
-    --color-accent:         oklch(0.25 0.06 285);
-    --color-accent-hover:   oklch(0.28 0.08 285);
-    --color-accent-content: oklch(0.80 0.18 285);
-
-    --shadow-sm: 0 1px 2px oklch(0 0 0 / 30%);
-    --shadow-md: 0 4px 12px oklch(0 0 0 / 40%), 0 1px 3px oklch(0 0 0 / 25%);
-    --shadow-lg: 0 8px 24px oklch(0 0 0 / 50%), 0 2px 6px oklch(0 0 0 / 30%);
-  }
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 30%);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 40%), 0 1px 3px oklch(0 0 0 / 25%);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 50%), 0 2px 6px oklch(0 0 0 / 30%);
 }
 
 

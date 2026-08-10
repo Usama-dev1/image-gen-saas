@@ -1,5 +1,6 @@
 import { BatchView } from "./BatchView";
 
 export function BatchContainer() {
-  return <BatchView />;
+  const mockModelCost = 5;
+  return <BatchView modelCost={mockModelCost} />;
 }
