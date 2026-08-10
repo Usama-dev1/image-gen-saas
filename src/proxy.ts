@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const SESSION_COOKIE_NAME = "better-auth.session_token";
+const COOKIE_NAME = "better-auth.session_token";
+const SECURE_COOKIE_NAME = `__Secure-${COOKIE_NAME}`;
 
 const PROTECTED_ROUTES = ["/dashboard"];
 const AUTH_ROUTES = ["/login", "/register"];
 
+function hasSessionCookie(request: NextRequest) {
+  const secureCookie = request.cookies.get(SECURE_COOKIE_NAME);
+  const normalCookie = request.cookies.get(COOKIE_NAME);
+  return !!(secureCookie?.value || normalCookie?.value);
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  const isLoggedIn = !!sessionCookie?.value;
+  const isLoggedIn = hasSessionCookie(request);
 
   // 1. Redirect unauthenticated users away from protected routes
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
