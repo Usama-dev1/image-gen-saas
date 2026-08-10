@@ -5,9 +5,23 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 import { getInitialUserFields } from "./user";
 
+import { logger } from "./logger";
+
 // Connect directly via MongoClient for Better Auth
-const client = new MongoClient(process.env.MONGODB_URI as string);
-const db = client.db();
+let client: MongoClient;
+let db: any;
+
+try {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is missing in environment variables.");
+  }
+  client = new MongoClient(process.env.MONGODB_URI);
+  db = client.db();
+} catch (error: any) {
+  logger.error("FATAL ERROR: Failed to initialize MongoDB connection for Better Auth", error);
+  // Re-throw so the deployment cleanly errors instead of silently hanging
+  throw error;
+}
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
