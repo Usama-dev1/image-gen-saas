@@ -38,17 +38,23 @@ export function RegisterContainer() {
       return;
     }
 
-    const { error: signUpError } = await signUp.email({
-      name,
-      email,
-      password,
-    });
+    try {
+      const { error: signUpError } = await signUp.email({
+        name,
+        email,
+        password,
+      });
 
-    if (signUpError) {
-      setError(signUpError.message || "Failed to register");
+      if (signUpError) {
+        setError(signUpError.message || "Failed to register");
+        setLoading(false);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Register exception:", err);
+      setError(err.message || "A network error occurred. Please try again.");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
     }
   };
 

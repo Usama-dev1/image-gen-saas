@@ -40,13 +40,20 @@ export function LoginContainer() {
     }
 
     // 3. Call Better Auth client-side sign in
-    const { error: signInError } = await signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { error: signInError } = await signIn.email({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(signInError.message || "Invalid email or password");
+      if (signInError) {
+        setError(signInError.message || "Invalid email or password");
+        setLoading(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error("Login exception:", err);
+      setError(err.message || "A network error occurred. Please try again.");
       setLoading(false);
       return;
     }
