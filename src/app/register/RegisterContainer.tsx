@@ -49,7 +49,7 @@ export function RegisterContainer() {
         setError(signUpError.message || "Failed to register");
         setLoading(false);
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       console.error("Register exception:", err);

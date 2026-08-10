@@ -59,7 +59,7 @@ export function LoginContainer() {
     }
 
     // 4. Redirect on success
-    router.push("/dashboard");
+    window.location.href = "/dashboard";
   };
 
   const handleGoogleLogin = async () => {
