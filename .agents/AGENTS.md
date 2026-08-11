@@ -6,6 +6,7 @@
 - If you copy-paste more than 5 lines, it needs to be a function.
 - Return early on errors, continue on success — keeps the happy path clean and flat.
 - Split files by responsibility, not by size.
+- Never run build or push  code without user permission never do external api calling. without permission
 
 ## TypeScript
 - Keep types minimal. Use basic primitives: `string`, `number`, `boolean`, arrays.
@@ -132,6 +133,7 @@
 ## Agent Behavior & Permissions
 - NEVER make unsolicited changes. Do exactly as told, and no more.
 - ALWAYS ask for explicit permission before doing multi-file edits or implementing broad changes.
+- NEVER run `build` commands, push code, or overstep boundaries without explicit user permission.
 
 ## App Architecture & Integrations
 - **MongoDB First**: MongoDB is the absolute source of truth. Never rely on third-party Admin APIs to query state.
