@@ -10,9 +10,10 @@ export type BillingViewProps = {
   plan: string;
   credits: number;
   isCancelled: boolean;
+  periodEnd?: string | null;
 };
 
-export function BillingView({ plan, credits, isCancelled }: BillingViewProps) {
+export function BillingView({ plan, credits, isCancelled, periodEnd }: BillingViewProps) {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
   const handleCheckout = async (selectedPlan: "pro" | "max" | "refill") => {
@@ -77,11 +78,18 @@ export function BillingView({ plan, credits, isCancelled }: BillingViewProps) {
 
       {plan !== "free" && !isCancelled && (
         <div className="bg-primary/10 border border-primary/20 text-foreground px-4 py-3.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Zap className="size-4 text-primary fill-primary shrink-0" />
-            <span>
-              You are currently subscribed to the <strong className="uppercase">{plan}</strong> plan.
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-2">
+              <Zap className="size-4 text-primary fill-primary shrink-0" />
+              <span>
+                You are currently subscribed to the <strong className="uppercase">{plan}</strong> plan.
+              </span>
+            </div>
+            {periodEnd && (
+              <span className="text-muted-foreground text-xs sm:ml-2">
+                (Renews on {periodEnd})
+              </span>
+            )}
           </div>
           <Button
             className="btn-outline text-xs h-8 whitespace-nowrap px-3 py-1"
@@ -102,11 +110,13 @@ export function BillingView({ plan, credits, isCancelled }: BillingViewProps) {
 
       {plan !== "free" && isCancelled && (
         <div className="bg-amber-500/10 border border-amber-500/20 text-foreground px-4 py-3.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Zap className="size-4 text-amber-500 shrink-0" />
-            <span>
-              Your <strong className="uppercase">{plan}</strong> plan has been cancelled and will end at the current billing period. Resubscribe below.
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-2">
+              <Zap className="size-4 text-amber-500 shrink-0" />
+              <span>
+                Your <strong className="uppercase">{plan}</strong> plan has been cancelled and will end on {periodEnd || "the current billing period"}. Resubscribe below.
+              </span>
+            </div>
           </div>
         </div>
       )}
