@@ -29,7 +29,8 @@ export async function BillingContainer() {
         const end = (subscription as any).current_period_end;
         console.log("[BillingContainer] retrieved sub current_period_end:", end);
         if (end) {
-          periodEnd = new Date(end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+          const d = new Date(end * 1000);
+          periodEnd = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()}, ${d.getFullYear()}`;
         }
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
@@ -45,7 +46,8 @@ export async function BillingContainer() {
           const end = (activeSubscription as any).current_period_end;
           console.log("[BillingContainer] listed sub current_period_end:", end);
           if (end) {
-            periodEnd = new Date(end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+            const d = new Date(end * 1000);
+            periodEnd = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()}, ${d.getFullYear()}`;
           }
         }
       }
