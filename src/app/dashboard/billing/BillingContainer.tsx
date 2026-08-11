@@ -25,7 +25,12 @@ export async function BillingContainer() {
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
-        periodEnd = new Date((subscription as any).current_period_end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+        
+        const end = (subscription as any).current_period_end;
+        console.log("[BillingContainer] retrieved sub current_period_end:", end);
+        if (end) {
+          periodEnd = new Date(end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+        }
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
         const subscriptions = await stripe.subscriptions.list({
@@ -36,7 +41,12 @@ export async function BillingContainer() {
         const activeSubscription = subscriptions.data[0];
         if (activeSubscription) {
           isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
-          periodEnd = new Date((activeSubscription as any).current_period_end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+          
+          const end = (activeSubscription as any).current_period_end;
+          console.log("[BillingContainer] listed sub current_period_end:", end);
+          if (end) {
+            periodEnd = new Date(end * 1000).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' });
+          }
         }
       }
       console.log("[BillingContainer] Subscription check", { userId, plan, isCancelled, periodEnd, customerId, subscriptionId });
