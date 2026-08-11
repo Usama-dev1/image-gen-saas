@@ -3,12 +3,14 @@ import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import stripe from "@/lib/stripe/stripe";
 import { BillingView } from "./BillingView";
+import { formatUnixDate } from "@/lib/format-date";
 
 export async function BillingContainer() {
   const userId = await authGuard();
   await connectDB();
 
   const user = await User.findById(userId).select("plan credits billingCustomerId billingSubscriptionId").lean();
+  if (!user) return null;
 
   const plan = user?.plan || "free";
   const credits = user?.credits || 0;
@@ -21,7 +23,6 @@ export async function BillingContainer() {
 
   if (customerId || subscriptionId) {
     try {
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       // 1. Try direct subscription lookup first (fastest)
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -29,8 +30,7 @@ export async function BillingContainer() {
         
         const end = (subscription as any).current_period_end;
         if (end) {
-          const d = new Date(end * 1000);
-          periodEnd = `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+          periodEnd = formatUnixDate(end);
         }
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
@@ -45,8 +45,7 @@ export async function BillingContainer() {
           
           const end = (activeSubscription as any).current_period_end;
           if (end) {
-            const d = new Date(end * 1000);
-            periodEnd = `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+            periodEnd = formatUnixDate(end);
           }
         }
       }
