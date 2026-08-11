@@ -44,13 +44,34 @@ export const POST = async (req: Request) => {
     const body = await req.json();
     console.log("[stripe/checkout] called", { userId, body });
     const { plan } = checkoutSchema.parse(body);
+    const isRefill = plan === "refill";
 
-    const priceId = PLAN_PRICE_MAP[plan];
-    if (!priceId) {
-      return NextResponse.json(
-        { error: "Invalid price ID configuration. Check environment variables." },
-        { status: 400 }
-      );
+    // For one-time credit refills, use inline price_data with mode: "payment".
+    // For recurring subscription plans (pro/max), use configured price IDs with mode: "subscription".
+    let lineItems: any[];
+    if (isRefill) {
+      lineItems = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "500 Extra Credits Refill",
+              description: "One-time purchase of 500 AI image generation credits",
+            },
+            unit_amount: 1000, // $10.00 USD in cents
+          },
+          quantity: 1,
+        },
+      ];
+    } else {
+      const priceId = PLAN_PRICE_MAP[plan];
+      if (!priceId) {
+        return NextResponse.json(
+          { error: "Invalid price ID configuration. Check environment variables." },
+          { status: 400 }
+        );
+      }
+      lineItems = [{ price: priceId, quantity: 1 }];
     }
 
     // Step 3: Connect to MongoDB and verify target user document exists
@@ -66,13 +87,10 @@ export const POST = async (req: Request) => {
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
       "http://localhost:3000";
 
-    const isRefill = plan === "refill";
-
     // Step 5: Call Stripe API to create a hosted checkout session with metadata
-    // Use "payment" mode for one-time credit top-ups, "subscription" for recurring plans
     const sessionPayload: any = {
       payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: lineItems,
       mode: isRefill ? "payment" : "subscription",
       success_url: `${origin}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/dashboard?payment=cancelled`,
