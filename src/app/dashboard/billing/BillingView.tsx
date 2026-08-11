@@ -15,6 +15,13 @@ export function BillingView({ plan, credits }: BillingViewProps) {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
   const handleCheckout = async (selectedPlan: "pro" | "max" | "refill") => {
+    // If user is already on a paid plan and selects a different subscription plan (not refill),
+    // route through Stripe Customer Portal so Stripe handles upgrades/downgrades natively
+    if (selectedPlan !== "refill" && plan !== "free" && plan !== selectedPlan) {
+      await handleManagePortal();
+      return;
+    }
+
     try {
       setLoadingTarget(selectedPlan);
       const res = await fetch("/api/stripe", {
@@ -106,20 +113,22 @@ export function BillingView({ plan, credits }: BillingViewProps) {
                 ? "You are currently on the free plan. Upgrade to unlock more monthly credits and priority features."
                 : `You are currently subscribed to the ${plan.toUpperCase()} plan.`}
             </p>
-            <Button
-              className="btn-secondary w-full"
-              onClick={handleManagePortal}
-              disabled={loadingTarget === "portal"}
-            >
-              {loadingTarget === "portal" ? (
-                <>
-                  <Loader2 className="size-4 animate-spin mr-2" />
-                  Opening Portal...
-                </>
-              ) : (
-                "Manage Subscription"
-              )}
-            </Button>
+            {plan !== "free" && (
+              <Button
+                className="btn-secondary w-full"
+                onClick={handleManagePortal}
+                disabled={loadingTarget === "portal"}
+              >
+                {loadingTarget === "portal" ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                    Opening Portal...
+                  </>
+                ) : (
+                  "Manage Subscription"
+                )}
+              </Button>
+            )}
           </CardBody>
         </Card>
 
@@ -155,7 +164,9 @@ export function BillingView({ plan, credits }: BillingViewProps) {
 
       <section className="pt-8">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold tracking-tight">Upgrade your plan</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {plan === "max" ? "Change your plan" : "Upgrade your plan"}
+          </h2>
           <p className="text-muted-foreground mt-2">Choose the plan that fits your needs.</p>
         </div>
 

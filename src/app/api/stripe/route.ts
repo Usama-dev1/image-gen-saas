@@ -6,11 +6,12 @@
  * - Development: POST http://localhost:3000/api/stripe
  * 
  * Purpose:
- * Creates a Stripe Checkout Session for subscription plan upgrades ("pro" or "max").
+ * Creates a Stripe Checkout Session for subscription plan upgrades ("pro" or "max")
+ * or one-time credit refill purchases ("refill").
  * Returns a hosted Stripe Checkout URL ({ url }) for front-end redirection.
  * 
  * Request Payload (JSON):
- * { "plan": "pro" | "max" }
+ * { "plan": "pro" | "max" | "refill" }
  * 
  * Response Payload (JSON):
  * { "url": "https://checkout.stripe.com/c/pay/cs_test_..." }
@@ -28,11 +29,10 @@ const checkoutSchema = z.object({
   plan: z.enum(["pro", "max", "refill"]),
 });
 
-// 2. Map plan names to configured Stripe Price IDs in environment variables
+// 2. Map subscription plan names to configured Stripe Price IDs (refills use inline price_data)
 const PLAN_PRICE_MAP: Record<string, string | undefined> = {
   pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
   max: process.env.NEXT_PUBLIC_STRIPE_MAX_PRICE_ID,
-  refill: process.env.NEXT_PUBLIC_STRIPE_REFILL_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
 };
 
 export const POST = async (req: Request) => {
@@ -79,6 +79,14 @@ export const POST = async (req: Request) => {
     const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Step 4: Block duplicate subscription for the same active plan (refills are always allowed)
+    if (!isRefill && user.plan === plan) {
+      return NextResponse.json(
+        { error: "You are already subscribed to this plan." },
+        { status: 400 }
+      );
     }
 
     // Step 4: Determine base application URL for success/cancel redirects
