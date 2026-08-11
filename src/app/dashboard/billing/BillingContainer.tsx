@@ -21,16 +21,16 @@ export async function BillingContainer() {
 
   if (customerId || subscriptionId) {
     try {
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       // 1. Try direct subscription lookup first (fastest)
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
         
         const end = (subscription as any).current_period_end;
-        console.log("[BillingContainer] retrieved sub current_period_end:", end);
         if (end) {
           const d = new Date(end * 1000);
-          periodEnd = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()}, ${d.getFullYear()}`;
+          periodEnd = `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
         }
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
@@ -44,10 +44,9 @@ export async function BillingContainer() {
           isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
           
           const end = (activeSubscription as any).current_period_end;
-          console.log("[BillingContainer] listed sub current_period_end:", end);
           if (end) {
             const d = new Date(end * 1000);
-            periodEnd = `${d.toLocaleString('default', { month: 'long' })} ${d.getDate()}, ${d.getFullYear()}`;
+            periodEnd = `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
           }
         }
       }
