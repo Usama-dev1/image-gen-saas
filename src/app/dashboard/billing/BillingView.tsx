@@ -15,6 +15,13 @@ export function BillingView({ plan, credits }: BillingViewProps) {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
   const handleCheckout = async (selectedPlan: "pro" | "max") => {
+    // If user is already on a paid plan and selects a different plan (e.g., Max user clicking Pro to downgrade),
+    // redirect to Stripe Customer Portal so Stripe handles plan changes/downgrades natively
+    if (plan !== "free" && plan !== selectedPlan) {
+      await handleManagePortal();
+      return;
+    }
+
     try {
       setLoadingTarget(selectedPlan);
       const res = await fetch("/api/stripe", {
@@ -138,15 +145,17 @@ export function BillingView({ plan, credits }: BillingViewProps) {
             <Button
               className="btn-primary w-full"
               onClick={() => handleCheckout("pro")}
-              disabled={plan === "pro" || loadingTarget === "pro"}
+              disabled={plan === "pro" || loadingTarget === "pro" || loadingTarget === "portal"}
             >
-              {loadingTarget === "pro" ? (
+              {loadingTarget === "pro" || (loadingTarget === "portal" && plan === "max") ? (
                 <>
                   <Loader2 className="size-4 animate-spin mr-2" />
                   Redirecting...
                 </>
               ) : plan === "pro" ? (
                 "Current Plan"
+              ) : plan === "max" ? (
+                "Downgrade to Pro"
               ) : (
                 "Get Pro Refill"
               )}
@@ -189,15 +198,17 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-outline w-full mt-8"
                 onClick={() => handleCheckout("pro")}
-                disabled={plan === "pro" || loadingTarget === "pro"}
+                disabled={plan === "pro" || loadingTarget === "pro" || loadingTarget === "portal"}
               >
-                {loadingTarget === "pro" ? (
+                {loadingTarget === "pro" || (loadingTarget === "portal" && plan === "max") ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
                   </>
                 ) : plan === "pro" ? (
                   "Current Plan"
+                ) : plan === "max" ? (
+                  "Downgrade to Pro"
                 ) : (
                   "Upgrade to Pro"
                 )}
@@ -237,9 +248,9 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-primary w-full mt-8"
                 onClick={() => handleCheckout("max")}
-                disabled={plan === "max" || loadingTarget === "max"}
+                disabled={plan === "max" || loadingTarget === "max" || loadingTarget === "portal"}
               >
-                {loadingTarget === "max" ? (
+                {loadingTarget === "max" || (loadingTarget === "portal" && plan === "pro") ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
