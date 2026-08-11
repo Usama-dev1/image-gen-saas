@@ -49,8 +49,8 @@ export async function BillingContainer() {
           }
         }
       }
-      console.log("[BillingContainer] Subscription check", { userId, plan, isCancelled, periodEnd, customerId, subscriptionId });
-    } catch (error) {
+    } catch (error: any) {
+      periodEnd = `ERROR: ${error.message}`;
       console.error("[BillingContainer] Failed to fetch subscription status", error);
     }
   }
