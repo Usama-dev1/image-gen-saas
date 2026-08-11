@@ -74,6 +74,7 @@ export function BillingView({ plan, credits, isCancelled, periodEnd }: BillingVi
       <div>
         <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">Billing & Plan</h1>
         <p className="text-muted-foreground mt-1">Manage your subscription and credit balance.</p>
+        <p className="text-xs text-red-500 font-mono mt-1">DEBUG: isCancelled={String(isCancelled)} | periodEnd={String(periodEnd)}</p>
       </div>
 
       {plan !== "free" && !isCancelled && (
