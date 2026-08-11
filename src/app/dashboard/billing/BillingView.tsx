@@ -9,15 +9,17 @@ import { Check, Coins, CreditCard, Zap, Loader2 } from "lucide-react";
 export type BillingViewProps = {
   plan: string;
   credits: number;
+  isCancelled: boolean;
 };
 
-export function BillingView({ plan, credits }: BillingViewProps) {
+export function BillingView({ plan, credits, isCancelled }: BillingViewProps) {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
   const handleCheckout = async (selectedPlan: "pro" | "max" | "refill") => {
-    // If user is already on a paid plan and selects a different subscription plan (not refill),
-    // route through Stripe Customer Portal so Stripe handles upgrades/downgrades natively
-    if (selectedPlan !== "refill" && plan !== "free" && plan !== selectedPlan) {
+    // If user is on a paid plan, not cancelled, and selects a different plan (not refill),
+    // route through Stripe Customer Portal so Stripe handles upgrades/downgrades natively.
+    // When subscription is cancelled (pending end), skip portal and create a fresh checkout.
+    if (selectedPlan !== "refill" && plan !== "free" && plan !== selectedPlan && !isCancelled) {
       await handleManagePortal();
       return;
     }
@@ -73,7 +75,7 @@ export function BillingView({ plan, credits }: BillingViewProps) {
         <p className="text-muted-foreground mt-1">Manage your subscription and credit balance.</p>
       </div>
 
-      {plan !== "free" && (
+      {plan !== "free" && !isCancelled && (
         <div className="bg-primary/10 border border-primary/20 text-foreground px-4 py-3.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-2">
             <Zap className="size-4 text-primary fill-primary shrink-0" />
@@ -95,6 +97,17 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               "Manage Subscription"
             )}
           </Button>
+        </div>
+      )}
+
+      {plan !== "free" && isCancelled && (
+        <div className="bg-amber-500/10 border border-amber-500/20 text-foreground px-4 py-3.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <Zap className="size-4 text-amber-500 shrink-0" />
+            <span>
+              Your <strong className="uppercase">{plan}</strong> plan has been cancelled and will end at the current billing period. Resubscribe below.
+            </span>
+          </div>
         </div>
       )}
 
@@ -198,15 +211,17 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-outline w-full mt-8"
                 onClick={() => handleCheckout("pro")}
-                disabled={plan === "pro" || loadingTarget === "pro"}
+                disabled={(plan === "pro" && !isCancelled) || loadingTarget === "pro"}
               >
                 {loadingTarget === "pro" ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
                   </>
-                ) : plan === "pro" ? (
+                ) : plan === "pro" && !isCancelled ? (
                   "Current Plan"
+                ) : isCancelled ? (
+                  plan === "pro" ? "Resubscribe to Pro" : "Subscribe to Pro"
                 ) : plan === "max" ? (
                   "Downgrade to Pro"
                 ) : (
@@ -248,15 +263,17 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-primary w-full mt-8"
                 onClick={() => handleCheckout("max")}
-                disabled={plan === "max" || loadingTarget === "max"}
+                disabled={(plan === "max" && !isCancelled) || loadingTarget === "max"}
               >
                 {loadingTarget === "max" ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
                   </>
-                ) : plan === "max" ? (
+                ) : plan === "max" && !isCancelled ? (
                   "Current Plan"
+                ) : isCancelled ? (
+                  plan === "max" ? "Resubscribe to Max" : "Subscribe to Max"
                 ) : (
                   "Upgrade to Max"
                 )}

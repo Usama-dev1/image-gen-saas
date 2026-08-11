@@ -81,12 +81,20 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Step 4: Block duplicate subscription for the same active plan (refills are always allowed)
+    // Step 4: Block duplicate subscription for the same active plan (refills always allowed)
+    // Allow re-subscribing if the current subscription is cancelled (pending end)
     if (!isRefill && user.plan === plan) {
-      return NextResponse.json(
-        { error: "You are already subscribed to this plan." },
-        { status: 400 }
-      );
+      let isCancelled = false;
+      if (user.billingSubscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(user.billingSubscriptionId);
+        isCancelled = subscription.cancel_at_period_end === true;
+      }
+      if (!isCancelled) {
+        return NextResponse.json(
+          { error: "You are already subscribed to this plan." },
+          { status: 400 }
+        );
+      }
     }
 
     // Step 4: Determine base application URL for success/cancel redirects
