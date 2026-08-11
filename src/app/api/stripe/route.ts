@@ -59,15 +59,7 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Step 4: Check if user is already on the requested plan
-    if (user.plan === plan) {
-      return NextResponse.json(
-        { error: "You are already subscribed to this plan." },
-        { status: 400 }
-      );
-    }
-
-    // Step 5: Determine base application URL for success/cancel redirects
+    // Step 4: Determine base application URL for success/cancel redirects
     const origin =
       req.headers.get("origin") ||
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||

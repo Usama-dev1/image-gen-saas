@@ -133,24 +133,20 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               {credits.toLocaleString()}
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Credits are used to generate AI images. Upgrade your plan to get monthly credit refills.
+              Credits are used to generate AI images. Need more credits? Buy a 500 credit refill for $10.
             </p>
             <Button
               className="btn-primary w-full"
               onClick={() => handleCheckout("pro")}
-              disabled={plan === "pro" || loadingTarget === "pro"}
+              disabled={loadingTarget === "pro"}
             >
               {loadingTarget === "pro" ? (
                 <>
                   <Loader2 className="size-4 animate-spin mr-2" />
                   Redirecting...
                 </>
-              ) : plan === "pro" ? (
-                "Current Plan"
-              ) : plan === "max" ? (
-                "Downgrade to Pro"
               ) : (
-                "Get Pro Refill"
+                "Buy 500 Credits ($10)"
               )}
             </Button>
           </CardBody>
