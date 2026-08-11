@@ -128,6 +128,54 @@ export const POST = async (req: Request) => {
       });
     }
 
+    // Step 7: Handle `customer.subscription.updated` event when user upgrades/downgrades in Portal
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id;
+      const priceId = subscription.items.data[0]?.price.id;
+
+      let newPlan = "free";
+      if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID) {
+        newPlan = "pro";
+      } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_MAX_PRICE_ID) {
+        newPlan = "max";
+      }
+
+      if (customerId && newPlan !== "free") {
+        await connectDB();
+        await User.findOneAndUpdate(
+          { billingCustomerId: customerId },
+          {
+            $set: {
+              plan: newPlan,
+              billingSubscriptionId: subscription.id,
+            },
+          }
+        );
+        console.log("[webhooks/stripe] Updated plan from portal subscription change:", { customerId, newPlan });
+      }
+    }
+
+    // Step 8: Handle `customer.subscription.deleted` event when user cancels in Portal
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id;
+
+      if (customerId) {
+        await connectDB();
+        await User.findOneAndUpdate(
+          { billingCustomerId: customerId },
+          {
+            $set: {
+              plan: "free",
+              billingSubscriptionId: null,
+            },
+          }
+        );
+        console.log("[webhooks/stripe] Subscription canceled via portal for customer:", customerId);
+      }
+    }
+
     // Return 200 OK to Stripe confirming successful receipt
     return NextResponse.json({ received: true });
   } catch (error: any) {
