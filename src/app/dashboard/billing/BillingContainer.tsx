@@ -23,7 +23,7 @@ export async function BillingContainer() {
       // 1. Try direct subscription lookup first (fastest)
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        isCancelled = subscription.cancel_at_period_end === true;
+        isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
         const subscriptions = await stripe.subscriptions.list({
@@ -33,7 +33,7 @@ export async function BillingContainer() {
         });
         const activeSubscription = subscriptions.data[0];
         if (activeSubscription) {
-          isCancelled = activeSubscription.cancel_at_period_end === true;
+          isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
         }
       }
       console.log("[BillingContainer] Subscription check", { userId, plan, isCancelled, customerId, subscriptionId });

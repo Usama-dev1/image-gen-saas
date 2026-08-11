@@ -87,7 +87,7 @@ export const POST = async (req: Request) => {
       let isCancelled = false;
       if (user.billingSubscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(user.billingSubscriptionId);
-        isCancelled = subscription.cancel_at_period_end === true;
+        isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
       } else if (user.billingCustomerId) {
         const subscriptions = await stripe.subscriptions.list({
           customer: user.billingCustomerId,
@@ -96,7 +96,7 @@ export const POST = async (req: Request) => {
         });
         const activeSubscription = subscriptions.data[0];
         if (activeSubscription) {
-          isCancelled = activeSubscription.cancel_at_period_end === true;
+          isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
         }
       }
       if (!isCancelled) {
