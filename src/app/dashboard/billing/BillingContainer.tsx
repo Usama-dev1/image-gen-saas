@@ -3,12 +3,11 @@ import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import stripe from "@/lib/stripe/stripe";
 import { BillingView } from "./BillingView";
-import { formatUnixDate } from "@/lib/format-date";
 
 export async function BillingContainer() {
   const userId = await authGuard();
+  
   await connectDB();
-
   const user = await User.findById(userId).select("plan credits billingCustomerId billingSubscriptionId").lean();
   if (!user) return null;
 
@@ -17,7 +16,6 @@ export async function BillingContainer() {
 
   // Check if the active subscription is pending cancellation
   let isCancelled = false;
-  let periodEnd: string | null = null;
   const customerId = user?.billingCustomerId;
   const subscriptionId = user?.billingSubscriptionId;
 
@@ -27,11 +25,6 @@ export async function BillingContainer() {
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
-
-        const end = (subscription as any).current_period_end;
-        if (end) {
-          periodEnd = formatUnixDate(end);
-        }
       } else if (customerId) {
         // 2. Fallback: list active subscriptions for this customer
         const subscriptions = await stripe.subscriptions.list({
@@ -42,18 +35,13 @@ export async function BillingContainer() {
         const activeSubscription = subscriptions.data[0];
         if (activeSubscription) {
           isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
-
-          const end = (activeSubscription as any).current_period_end;
-          if (end) {
-            periodEnd = formatUnixDate(end);
-          }
         }
       }
-    } catch (error: any) {
-      periodEnd = `ERROR: ${error.message}`;
+      console.log("[BillingContainer] Subscription check", { userId, plan, isCancelled, customerId, subscriptionId });
+    } catch (error) {
       console.error("[BillingContainer] Failed to fetch subscription status", error);
     }
   }
 
-  return <BillingView plan={plan} credits={credits} isCancelled={isCancelled} periodEnd={periodEnd} />;
+  return <BillingView plan={plan} credits={credits} isCancelled={isCancelled} />;
 }
