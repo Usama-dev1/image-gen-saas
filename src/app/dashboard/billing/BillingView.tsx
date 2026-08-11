@@ -66,6 +66,31 @@ export function BillingView({ plan, credits }: BillingViewProps) {
         <p className="text-muted-foreground mt-1">Manage your subscription and credit balance.</p>
       </div>
 
+      {plan !== "free" && (
+        <div className="bg-primary/10 border border-primary/20 text-foreground px-4 py-3.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <Zap className="size-4 text-primary fill-primary shrink-0" />
+            <span>
+              You are currently subscribed to the <strong className="uppercase">{plan}</strong> plan.
+            </span>
+          </div>
+          <Button
+            className="btn-outline text-xs h-8 whitespace-nowrap px-3 py-1"
+            onClick={handleManagePortal}
+            disabled={loadingTarget === "portal"}
+          >
+            {loadingTarget === "portal" ? (
+              <>
+                <Loader2 className="size-3 animate-spin mr-1" />
+                Opening Portal...
+              </>
+            ) : (
+              "Manage Subscription"
+            )}
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardBody className="p-6">
@@ -113,13 +138,15 @@ export function BillingView({ plan, credits }: BillingViewProps) {
             <Button
               className="btn-primary w-full"
               onClick={() => handleCheckout("pro")}
-              disabled={loadingTarget === "pro"}
+              disabled={plan === "pro" || loadingTarget === "pro"}
             >
               {loadingTarget === "pro" ? (
                 <>
                   <Loader2 className="size-4 animate-spin mr-2" />
                   Redirecting...
                 </>
+              ) : plan === "pro" ? (
+                "Current Plan"
               ) : (
                 "Get Pro Refill"
               )}
@@ -162,13 +189,15 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-outline w-full mt-8"
                 onClick={() => handleCheckout("pro")}
-                disabled={loadingTarget === "pro"}
+                disabled={plan === "pro" || loadingTarget === "pro"}
               >
                 {loadingTarget === "pro" ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
                   </>
+                ) : plan === "pro" ? (
+                  "Current Plan"
                 ) : (
                   "Upgrade to Pro"
                 )}
@@ -208,13 +237,15 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               <Button
                 className="btn-primary w-full mt-8"
                 onClick={() => handleCheckout("max")}
-                disabled={loadingTarget === "max"}
+                disabled={plan === "max" || loadingTarget === "max"}
               >
                 {loadingTarget === "max" ? (
                   <>
                     <Loader2 className="size-4 animate-spin mr-2" />
                     Redirecting...
                   </>
+                ) : plan === "max" ? (
+                  "Current Plan"
                 ) : (
                   "Upgrade to Max"
                 )}

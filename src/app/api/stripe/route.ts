@@ -59,28 +59,44 @@ export const POST = async (req: Request) => {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Step 4: Determine base application URL for success/cancel redirects
+    // Step 4: Check if user is already on the requested plan
+    if (user.plan === plan) {
+      return NextResponse.json(
+        { error: "You are already subscribed to this plan." },
+        { status: 400 }
+      );
+    }
+
+    // Step 5: Determine base application URL for success/cancel redirects
     const origin =
       req.headers.get("origin") ||
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
       "http://localhost:3000";
 
-    // Step 5: Call Stripe API to create a hosted checkout session with metadata
-    const session = await stripe.checkout.sessions.create({
+    // Step 6: Call Stripe API to create a hosted checkout session with metadata
+    const sessionPayload: any = {
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/dashboard?payment=cancelled`,
       client_reference_id: userId,
-      customer_email: user.email,
       metadata: {
         userId,
         plan,
       },
-    });
+    };
 
-    // Step 6: Return the Stripe checkout URL to client for browser redirection
+    // Reuse existing Stripe customer ID if available to avoid duplicate customer records
+    if (user.billingCustomerId) {
+      sessionPayload.customer = user.billingCustomerId;
+    } else {
+      sessionPayload.customer_email = user.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionPayload);
+
+    // Step 7: Return the Stripe checkout URL to client for browser redirection
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
     console.error("[stripe/checkout] error", error);
