@@ -6,7 +6,7 @@ import connectDB from "@/lib/db";
 
 const PAGE_LIMIT = 10;
 
-export async function GenerationsContainer({ cursor }: { cursor?: string }) {
+export async function GenerationsContainer({ cursor, filters }: { cursor?: string, filters?: { status?: string, model?: string, source?: string } }) {
   const userId = await authGuard();
   await connectDB();
 
@@ -14,6 +14,9 @@ export async function GenerationsContainer({ cursor }: { cursor?: string }) {
   if (cursor) {
     query._id = { $lt: cursor };
   }
+  if (filters?.status) query.status = filters.status;
+  if (filters?.model) query.modelSlug = filters.model;
+  if (filters?.source) query.source = filters.source;
 
   // Fetch actual data from DB
   const rawGenerations = await Generation.find(query)

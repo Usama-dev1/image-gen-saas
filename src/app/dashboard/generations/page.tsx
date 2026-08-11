@@ -8,7 +8,12 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default async function GenerationsPage({ searchParams }: { searchParams: Promise<{ cursor?: string }> }) {
+export default async function GenerationsPage({ searchParams }: { searchParams: Promise<{ cursor?: string, status?: string, model?: string, source?: string }> }) {
   const params = await searchParams;
-  return <GenerationsContainer cursor={params.cursor} />;
+  const filters = {
+    status: params.status,
+    model: params.model,
+    source: params.source,
+  };
+  return <GenerationsContainer cursor={params.cursor} filters={filters} />;
 }

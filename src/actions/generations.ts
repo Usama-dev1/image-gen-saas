@@ -4,7 +4,7 @@ import { authGuard } from "@/lib/auth-guard";
 import { Generation } from "@/models/Generation";
 import connectDB from "@/lib/db";
 
-export async function getGenerationsAction(cursor?: string, limit: number = 20) {
+export async function getGenerationsAction(cursor?: string, limit: number = 20, filters?: { status?: string, model?: string, source?: string }) {
   let userId: string;
   try {
     userId = await authGuard();
@@ -19,6 +19,9 @@ export async function getGenerationsAction(cursor?: string, limit: number = 20) 
     if (cursor) {
       query._id = { $lt: cursor };
     }
+    if (filters?.status) query.status = filters.status;
+    if (filters?.model) query.modelSlug = filters.model;
+    if (filters?.source) query.source = filters.source;
 
     const generations = await Generation.find(query)
       .sort({ createdAt: -1 })
