@@ -39,27 +39,27 @@ export function StudioPreview({ isGenerating, generatedImageUrl, onSaveCharacter
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="text-xs font-semibold uppercase tracking-wider m-0">Preview Canvas</div>
           <div className="flex gap-2">
-            <Button 
-              type="button" 
-              className="btn-outline h-8 gap-2 px-3 text-xs" 
-              disabled={!generatedImageUrl} 
+            <Button
+              type="button"
+              className="btn-outline h-8 gap-2 px-3 text-xs"
+              disabled={!generatedImageUrl}
               onClick={onSaveCharacterClick}
             >
               <UserPlus className="size-3" />
               Save Character
             </Button>
-            <Button 
-              type="button" 
-              className="btn-ghost btn-icon" 
-              disabled={!generatedImageUrl} 
+            <Button
+              type="button"
+              className="btn-ghost btn-icon"
+              disabled={!generatedImageUrl}
               onClick={handleDownload}
             >
               <Download className="size-4" />
             </Button>
-            <Button 
-              type="button" 
-              className="btn-ghost btn-icon" 
-              disabled={!generatedImageUrl} 
+            <Button
+              type="button"
+              className="btn-ghost btn-icon"
+              disabled={!generatedImageUrl}
               onClick={handleShare}
             >
               <Share2 className="size-4" />
@@ -70,14 +70,14 @@ export function StudioPreview({ isGenerating, generatedImageUrl, onSaveCharacter
           {isGenerating ? (
             <div className="flex flex-col items-center gap-4 p-8 text-center">
               <span className="loading loading-spinner loading-lg text-primary"></span>
-              <p className="text-sm font-medium animate-pulse">Brewing your masterpiece...</p>
+              <p className="text-sm font-medium animate-pulse">Loading your image...</p>
             </div>
           ) : generatedImageUrl ? (
             <div className="relative w-full h-full flex items-center justify-center p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={generatedImageUrl} 
-                alt="Generated Character" 
+              <img
+                src={generatedImageUrl}
+                alt="Generated Character"
                 className="max-w-full max-h-full object-contain rounded-md shadow-lg"
               />
             </div>

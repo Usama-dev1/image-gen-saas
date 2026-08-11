@@ -1,8 +1,10 @@
 "use client";
 
+// Client Component required for onClick handlers and browser redirects
+import { useState } from "react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Coins, CreditCard, Zap } from "lucide-react";
+import { Check, Coins, CreditCard, Zap, Loader2 } from "lucide-react";
 
 export type BillingViewProps = {
   plan: string;
@@ -10,6 +12,53 @@ export type BillingViewProps = {
 };
 
 export function BillingView({ plan, credits }: BillingViewProps) {
+  const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
+
+  const handleCheckout = async (selectedPlan: "pro" | "max") => {
+    try {
+      setLoadingTarget(selectedPlan);
+      const res = await fetch("/api/stripe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to initiate checkout");
+        setLoadingTarget(null);
+      }
+    } catch (error) {
+      console.error("[BillingView] Checkout error", error);
+      alert("Something went wrong. Please try again.");
+      setLoadingTarget(null);
+    }
+  };
+
+  const handleManagePortal = async () => {
+    try {
+      setLoadingTarget("portal");
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to open customer portal");
+        setLoadingTarget(null);
+      }
+    } catch (error) {
+      console.error("[BillingView] Portal error", error);
+      alert("Something went wrong. Please try again.");
+      setLoadingTarget(null);
+    }
+  };
+
   return (
     <div className="px-4 md:px-8 py-6 md:py-10 max-w-5xl mx-auto w-full space-y-8">
       <div>
@@ -28,9 +77,24 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               {plan}
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              You are currently on the free plan. Upgrade to unlock more features and monthly credits.
+              {plan === "free"
+                ? "You are currently on the free plan. Upgrade to unlock more monthly credits and priority features."
+                : `You are currently subscribed to the ${plan.toUpperCase()} plan.`}
             </p>
-            <Button className="btn-secondary w-full">Manage Subscription</Button>
+            <Button
+              className="btn-secondary w-full"
+              onClick={handleManagePortal}
+              disabled={loadingTarget === "portal"}
+            >
+              {loadingTarget === "portal" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Opening Portal...
+                </>
+              ) : (
+                "Manage Subscription"
+              )}
+            </Button>
           </CardBody>
         </Card>
 
@@ -44,9 +108,22 @@ export function BillingView({ plan, credits }: BillingViewProps) {
               {credits.toLocaleString()}
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              Credits are used to generate images. Standard models cost 1 credit, premium models cost more.
+              Credits are used to generate AI images. Upgrade your plan to get monthly credit refills.
             </p>
-            <Button className="btn-primary w-full">Buy More Credits</Button>
+            <Button
+              className="btn-primary w-full"
+              onClick={() => handleCheckout("pro")}
+              disabled={loadingTarget === "pro"}
+            >
+              {loadingTarget === "pro" ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Redirecting...
+                </>
+              ) : (
+                "Get Pro Refill"
+              )}
+            </Button>
           </CardBody>
         </Card>
       </div>
@@ -68,7 +145,12 @@ export function BillingView({ plan, credits }: BillingViewProps) {
                 <span className="ml-1 text-xl font-medium text-muted-foreground">/mo</span>
               </div>
               <ul className="mt-8 space-y-4">
-                {["1,000 monthly credits", "Access to all standard models", "Up to 5 saved characters", "Standard support"].map((feature) => (
+                {[
+                  "500 monthly credits",
+                  "Access to standard AI models",
+                  "Saved character portraits",
+                  "Standard customer support",
+                ].map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Check className="size-3 text-primary" />
@@ -77,7 +159,20 @@ export function BillingView({ plan, credits }: BillingViewProps) {
                   </li>
                 ))}
               </ul>
-              <Button className="btn-outline w-full mt-8">Upgrade to Pro</Button>
+              <Button
+                className="btn-outline w-full mt-8"
+                onClick={() => handleCheckout("pro")}
+                disabled={loadingTarget === "pro"}
+              >
+                {loadingTarget === "pro" ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                    Redirecting...
+                  </>
+                ) : (
+                  "Upgrade to Pro"
+                )}
+              </Button>
             </CardBody>
           </Card>
 
@@ -96,7 +191,12 @@ export function BillingView({ plan, credits }: BillingViewProps) {
                 <span className="ml-1 text-xl font-medium text-muted-foreground">/mo</span>
               </div>
               <ul className="mt-8 space-y-4">
-                {["3,000 monthly credits", "Access to PRO models (Flux, SD3)", "Unlimited saved characters", "Priority support"].map((feature) => (
+                {[
+                  "2,000 monthly credits",
+                  "Access to PRO AI models",
+                  "Unlimited character saved slots",
+                  "Priority customer support",
+                ].map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Check className="size-3 text-primary" />
@@ -105,7 +205,20 @@ export function BillingView({ plan, credits }: BillingViewProps) {
                   </li>
                 ))}
               </ul>
-              <Button className="btn-primary w-full mt-8">Upgrade to Max</Button>
+              <Button
+                className="btn-primary w-full mt-8"
+                onClick={() => handleCheckout("max")}
+                disabled={loadingTarget === "max"}
+              >
+                {loadingTarget === "max" ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                    Redirecting...
+                  </>
+                ) : (
+                  "Upgrade to Max"
+                )}
+              </Button>
             </CardBody>
           </Card>
         </div>
