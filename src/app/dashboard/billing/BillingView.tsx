@@ -27,7 +27,7 @@ export function BillingView({ plan, credits, isCancelled, periodEnd }: BillingVi
 
     try {
       setLoadingTarget(selectedPlan);
-      const res = await fetch("/api/stripe", {
+      const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: selectedPlan }),
@@ -50,7 +50,7 @@ export function BillingView({ plan, credits, isCancelled, periodEnd }: BillingVi
   const handleManagePortal = async () => {
     try {
       setLoadingTarget("portal");
-      const res = await fetch("/api/stripe/portal", {
+      const res = await fetch("/api/billing/portal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
