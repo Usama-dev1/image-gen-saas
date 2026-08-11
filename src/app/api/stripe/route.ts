@@ -25,13 +25,14 @@ import { User } from "@/models/User";
 
 // 1. Zod Schema for validating incoming request payload
 const checkoutSchema = z.object({
-  plan: z.enum(["pro", "max"]),
+  plan: z.enum(["pro", "max", "refill"]),
 });
 
 // 2. Map plan names to configured Stripe Price IDs in environment variables
-const PLAN_PRICE_MAP = {
+const PLAN_PRICE_MAP: Record<string, string | undefined> = {
   pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
   max: process.env.NEXT_PUBLIC_STRIPE_MAX_PRICE_ID,
+  refill: process.env.NEXT_PUBLIC_STRIPE_REFILL_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
 };
 
 export const POST = async (req: Request) => {
@@ -65,17 +66,21 @@ export const POST = async (req: Request) => {
       process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
       "http://localhost:3000";
 
-    // Step 6: Call Stripe API to create a hosted checkout session with metadata
+    const isRefill = plan === "refill";
+
+    // Step 5: Call Stripe API to create a hosted checkout session with metadata
+    // Use "payment" mode for one-time credit top-ups, "subscription" for recurring plans
     const sessionPayload: any = {
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
+      mode: isRefill ? "payment" : "subscription",
       success_url: `${origin}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/dashboard?payment=cancelled`,
       client_reference_id: userId,
       metadata: {
         userId,
         plan,
+        type: isRefill ? "one_time_refill" : "subscription",
       },
     };
 

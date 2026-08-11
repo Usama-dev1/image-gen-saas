@@ -68,6 +68,7 @@ export const POST = async (req: Request) => {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId || session.client_reference_id;
       const plan = session.metadata?.plan || "pro";
+      const isRefill = plan === "refill" || session.metadata?.type === "one_time_refill" || session.mode === "payment";
 
       if (!userId) {
         console.error("[webhooks/stripe] Missing userId in session metadata", { sessionId: session.id });
@@ -83,7 +84,7 @@ export const POST = async (req: Request) => {
         return NextResponse.json({ received: true });
       }
 
-      const creditsToAdd = PLAN_CREDITS_MAP[plan] || DEFAULT_CREDITS;
+      const creditsToAdd = isRefill ? 500 : (PLAN_CREDITS_MAP[plan] || DEFAULT_CREDITS);
       const amountInDollars = session.amount_total ? session.amount_total / 100 : 0;
 
       // Step 5: Record transaction in MongoDB Payment model
@@ -93,7 +94,7 @@ export const POST = async (req: Request) => {
         provider: "stripe",
         amount: amountInDollars,
         currency: session.currency || "usd",
-        plan,
+        plan: isRefill ? "refill" : plan,
         creditsAdded: creditsToAdd,
         status: PaymentStatus.COMPLETED,
       });
@@ -102,29 +103,32 @@ export const POST = async (req: Request) => {
       const customerId = typeof session.customer === "string" ? session.customer : undefined;
       const subscriptionId = typeof session.subscription === "string" ? session.subscription : undefined;
 
-      const updatePayload: Record<string, any> = {
-        plan: plan,
-      };
+      const updatePayload: Record<string, any> = {};
 
       if (customerId) {
         updatePayload.billingCustomerId = customerId;
       }
-      if (subscriptionId) {
-        updatePayload.billingSubscriptionId = subscriptionId;
+
+      // Only update subscription plan and subscription ID for subscription checkouts, NOT one-time credit refills
+      if (!isRefill) {
+        updatePayload.plan = plan;
+        if (subscriptionId) {
+          updatePayload.billingSubscriptionId = subscriptionId;
+        }
       }
 
-      // Step 6: Atomically increment user credits ($inc) and update plan ($set) in MongoDB
+      // Step 6: Atomically increment user credits ($inc) and update billing fields in MongoDB
       await User.findByIdAndUpdate(userId, {
         $inc: { credits: creditsToAdd },
-        $set: updatePayload,
+        ...(Object.keys(updatePayload).length > 0 ? { $set: updatePayload } : {}),
       });
 
-      console.log("[webhooks/stripe] Granted credits and updated user plan", {
+      console.log("[webhooks/stripe] Granted credits and updated user record", {
         userId,
         creditsToAdd,
+        isRefill,
         plan,
         customerId,
-        subscriptionId,
       });
     }
 

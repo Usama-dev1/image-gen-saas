@@ -14,7 +14,7 @@ export type BillingViewProps = {
 export function BillingView({ plan, credits }: BillingViewProps) {
   const [loadingTarget, setLoadingTarget] = useState<string | null>(null);
 
-  const handleCheckout = async (selectedPlan: "pro" | "max") => {
+  const handleCheckout = async (selectedPlan: "pro" | "max" | "refill") => {
     try {
       setLoadingTarget(selectedPlan);
       const res = await fetch("/api/stripe", {
@@ -137,16 +137,16 @@ export function BillingView({ plan, credits }: BillingViewProps) {
             </p>
             <Button
               className="btn-primary w-full"
-              onClick={() => handleCheckout("pro")}
-              disabled={loadingTarget === "pro"}
+              onClick={() => handleCheckout("refill")}
+              disabled={loadingTarget === "refill"}
             >
-              {loadingTarget === "pro" ? (
+              {loadingTarget === "refill" ? (
                 <>
                   <Loader2 className="size-4 animate-spin mr-2" />
                   Redirecting...
                 </>
               ) : (
-                "Buy 500 Credits ($10)"
+                "Buy 500 Extra Credits ($10)"
               )}
             </Button>
           </CardBody>
