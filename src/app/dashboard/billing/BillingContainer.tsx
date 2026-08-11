@@ -27,7 +27,7 @@ export async function BillingContainer() {
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         isCancelled = subscription.cancel_at_period_end === true || subscription.canceled_at !== null;
-        
+
         const end = (subscription as any).current_period_end;
         if (end) {
           periodEnd = formatUnixDate(end);
@@ -42,7 +42,7 @@ export async function BillingContainer() {
         const activeSubscription = subscriptions.data[0];
         if (activeSubscription) {
           isCancelled = activeSubscription.cancel_at_period_end === true || activeSubscription.canceled_at !== null;
-          
+
           const end = (activeSubscription as any).current_period_end;
           if (end) {
             periodEnd = formatUnixDate(end);
