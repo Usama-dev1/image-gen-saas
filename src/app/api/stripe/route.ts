@@ -88,6 +88,16 @@ export const POST = async (req: Request) => {
       if (user.billingSubscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(user.billingSubscriptionId);
         isCancelled = subscription.cancel_at_period_end === true;
+      } else if (user.billingCustomerId) {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: user.billingCustomerId,
+          status: "active",
+          limit: 1,
+        });
+        const activeSubscription = subscriptions.data[0];
+        if (activeSubscription) {
+          isCancelled = activeSubscription.cancel_at_period_end === true;
+        }
       }
       if (!isCancelled) {
         return NextResponse.json(
